@@ -1,5 +1,5 @@
 ﻿
-// MFCApplication3.h: PROJECT_NAME 应用程序的主头文件
+// window-selector.h: PROJECT_NAME 应用程序的主头文件
 //
 
 #pragma once
@@ -11,14 +11,14 @@
 #include "resource.h"		// 主符号
 
 
-// CMFCApplication3App:
-// 有关此类的实现，请参阅 MFCApplication3.cpp
+// CwindowselectorApp:
+// 有关此类的实现，请参阅 window-selector.cpp
 //
 
-class CMFCApplication3App : public CWinApp
+class CwindowselectorApp : public CWinApp
 {
 public:
-	CMFCApplication3App();
+	CwindowselectorApp();
 
 // 重写
 public:
@@ -29,4 +29,4 @@ public:
 	DECLARE_MESSAGE_MAP()
 };
 
-extern CMFCApplication3App theApp;
+extern CwindowselectorApp theApp;
