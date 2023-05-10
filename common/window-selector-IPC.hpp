@@ -15,8 +15,11 @@ static const auto SELECTOR_EXIT_CODE_CANCEL = 1;
 static const auto SELECTOR_EXIT_CODE_ERROR = 2;
 
 struct WindowSelectorIPC {
+	// input parameters
+	DWORD parentPID = 0;
 	POINT centerPos;
 	SIZE resolution;
 
+	// output parameters
 	DWORD64 outputWnd = 0; // should not use HWND
 };

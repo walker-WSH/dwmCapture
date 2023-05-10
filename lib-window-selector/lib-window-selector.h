@@ -1,10 +1,23 @@
 #pragma once
+#include <memory>
 #include <Windows.h>
-
-#define SELECTOR_EXPORT __declspec(dllexport)
+#include <functional>
 
 namespace selector {
 
-SELECTOR_EXPORT HWND selectWindow(POINT centerPos, SIZE resolution = {0, 0});
+class IWindowSelectorEvent {
+public:
+	virtual ~IWindowSelectorEvent() = default;
+	virtual void onSelectResult(HWND hWnd) = 0;
+};
+
+class IWindowSelector {
+public:
+	virtual ~IWindowSelector() = default;
+	virtual bool selectWindow(std::weak_ptr<IWindowSelectorEvent> cb, HWND centerWith,
+				  SIZE resolution = {0, 0}) = 0;
+};
+
+__declspec(dllexport) std::shared_ptr<IWindowSelector> createSelector();
 
 }; //namespace selector

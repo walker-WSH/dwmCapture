@@ -10,7 +10,7 @@
 #include "tool.hpp"
 
 static const auto MAIN_DLG_WIDTH = 1080;
-static const auto MAIN_DLG_HEIGHT = 600;
+static const auto MAIN_DLG_HEIGHT = 500;
 
 static const auto ITEM_BORDER_SIZE = 2;
 
@@ -49,6 +49,8 @@ protected:
 protected:
 	HICON m_hIcon;
 
+	bool m_bActived = false;
+
 	HWINEVENTHOOK m_hHook = nullptr;
 
 	std::vector<std::shared_ptr<WindowItemInfo>> m_vecWindows;
@@ -72,4 +74,5 @@ public:
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
+	afx_msg void OnActivateApp(BOOL bActive, DWORD dwThreadID);
 };

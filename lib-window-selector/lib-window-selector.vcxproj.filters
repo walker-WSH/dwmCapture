@@ -35,6 +35,9 @@
     <ClInclude Include="..\common\window-selector-IPC.hpp">
       <Filter>lib</Filter>
     </ClInclude>
+    <ClInclude Include="window-selector-impl.h">
+      <Filter>lib</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -54,6 +57,9 @@
     </ClCompile>
     <ClCompile Include="..\common\StringConvert.cpp">
       <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="window-selector-impl.cpp">
+      <Filter>lib</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

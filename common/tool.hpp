@@ -36,6 +36,16 @@ static std::wstring GetWindowTitle(HWND hwnd)
 		return std::wstring();
 }
 
+static bool IsWindowCloaked(HWND window)
+{
+	int isCloaked = 0;
+	HRESULT hr = DwmGetWindowAttribute(window, DWMWA_CLOAKED, &isCloaked, sizeof(isCloaked));
+	if (SUCCEEDED(hr) && isCloaked)
+		return true;
+
+	return false;
+}
+
 static bool IsWindowAvailable(HWND window)
 {
 	if (!IsWindow(window) || !IsWindowVisible(window))
@@ -50,9 +60,7 @@ static bool IsWindowAvailable(HWND window)
 	if (dwDestProcessID == GetCurrentProcessId())
 		return false;
 
-	int isCloaked = 0;
-	HRESULT hr = DwmGetWindowAttribute(window, DWMWA_CLOAKED, &isCloaked, sizeof(isCloaked));
-	if (SUCCEEDED(hr) && isCloaked)
+	if (IsWindowCloaked(window))
 		return false;
 
 	DWORD exStyle = (DWORD)GetWindowLongPtr(window, GWL_EXSTYLE);

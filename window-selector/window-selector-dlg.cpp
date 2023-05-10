@@ -90,6 +90,7 @@ ON_WM_DESTROY()
 ON_WM_TIMER()
 ON_WM_LBUTTONDOWN()
 ON_WM_LBUTTONDBLCLK()
+ON_WM_ACTIVATEAPP()
 END_MESSAGE_MAP()
 
 BOOL CWindowSelectorDlg::OnInitDialog()
@@ -98,29 +99,60 @@ BOOL CWindowSelectorDlg::OnInitDialog()
 
 	CDialogEx::OnInitDialog();
 
+	ShowWindow(SW_HIDE);
+
 	SetWindowText(L"Window Selector");
 	ModifyStyleEx(WS_EX_APPWINDOW, WS_EX_TOOLWINDOW);
 	ModifyStyle(0, WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
 
-	MoveWindow(0, 0, MAIN_DLG_WIDTH, MAIN_DLG_HEIGHT);
-	CenterWindow();
+	if (m_pMapInfo) {
+		if (m_pMapInfo->resolution.cx > 0 && m_pMapInfo->resolution.cy) {
+			MoveWindow(0, 0, m_pMapInfo->resolution.cx, m_pMapInfo->resolution.cy);
+		} else {
+			MoveWindow(0, 0, MAIN_DLG_WIDTH, MAIN_DLG_HEIGHT);
+		}
+
+		RECT rc;
+		GetWindowRect(&rc);
+
+		auto cx = (rc.right - rc.left);
+		auto cy = (rc.bottom - rc.top);
+
+		int left = m_pMapInfo->centerPos.x - cx / 2;
+		int top = m_pMapInfo->centerPos.y - cy / 2;
+
+		MoveWindow(left, top, cx, cy);
+
+	} else {
+		MoveWindow(0, 0, MAIN_DLG_WIDTH, MAIN_DLG_HEIGHT);
+		CenterWindow();
+	}
 
 	refreshWindows();
+	ShowWindow(SW_SHOW);
 
 	m_hHook = SetWinEventHook(
 		EVENT_OBJECT_DESTROY, EVENT_OBJECT_UNCLOAKED, nullptr,
 		[](HWINEVENTHOOK eventHook, DWORD event, HWND hwnd, LONG objectId, LONG childId,
 		   DWORD eventThreadId, DWORD eventTimeInMilliseconds) {
-			if (objectId == OBJID_WINDOW && event == EVENT_OBJECT_DESTROY &&
-			    childId == CHILDID_SELF) {
-				g_pMainDlg->removeWindow(hwnd);
-			}
-
 			if (objectId == OBJID_WINDOW && childId == CHILDID_SELF &&
-			    hwnd != nullptr && ::GetAncestor(hwnd, GA_ROOT) == hwnd &&
-			    (event == EVENT_OBJECT_SHOW || event == EVENT_OBJECT_UNCLOAKED)) {
-				if (IsWindowAvailable(hwnd)) {
-					g_pMainDlg->refreshWindows();
+			    hwnd != nullptr && ::GetAncestor(hwnd, GA_ROOT) == hwnd) {
+
+				switch (event) {
+				case EVENT_OBJECT_SHOW:
+				case EVENT_OBJECT_UNCLOAKED: {
+					if (IsWindowAvailable(hwnd)) {
+						g_pMainDlg->refreshWindows();
+					}
+				} break;
+
+				case EVENT_OBJECT_DESTROY:
+				case EVENT_OBJECT_CLOAKED: {
+					g_pMainDlg->removeWindow(hwnd);
+				} break;
+
+				default:
+					break;
 				}
 			}
 		},
@@ -179,7 +211,7 @@ void CWindowSelectorDlg::OnPaint()
 	CRect rect;
 	GetClientRect(&rect);
 
-	CBrush clrBrush(0xF0F0F0);
+	CBrush clrBrush(0xFFFFFF);
 	dc.FillRect(&rect, &clrBrush);
 
 	for (auto &item : m_vecWindows) {
@@ -204,6 +236,13 @@ BOOL CALLBACK enumWindowList(HWND window, LPARAM lParam)
 
 	if (!IsWindowAvailable(window))
 		return TRUE;
+
+	if (g_bIsRunAsTool) {
+		DWORD dwDestProcessID = 0;
+		::GetWindowThreadProcessId(window, &dwDestProcessID);
+		if (dwDestProcessID == m_pMapInfo->parentPID)
+			return TRUE;
+	}
 
 	auto title = GetWindowTitle(window);
 	if (title.empty())
@@ -244,7 +283,7 @@ void CWindowSelectorDlg::refreshWindows()
 	auto itr = m_vecWindows.begin();
 	while (itr != m_vecWindows.end()) {
 		auto item = *itr;
-		if (!IsWindow(item->hWnd)) {
+		if (!IsWindow(item->hWnd) || IsWindowCloaked(item->hWnd)) {
 			itr = m_vecWindows.erase(itr);
 			continue;
 		}
@@ -254,10 +293,7 @@ void CWindowSelectorDlg::refreshWindows()
 
 	EnumWindows(enumWindowList, (LPARAM)&m_vecWindows);
 
-	if (!m_vecWindows.empty())
-		initLayout();
-
-	Invalidate(FALSE);
+	initLayout();
 }
 
 void CWindowSelectorDlg::removeWindow(HWND wnd)
@@ -279,7 +315,6 @@ void CWindowSelectorDlg::removeWindow(HWND wnd)
 
 	if (found) {
 		initLayout();
-		Invalidate(FALSE);
 	}
 }
 
@@ -289,7 +324,6 @@ void CWindowSelectorDlg::initWindows()
 		return;
 
 	initLayout();
-	Invalidate(FALSE);
 }
 
 RECT getBestRegion(const RECT &drawDest)
@@ -428,12 +462,18 @@ void CWindowSelectorDlg::updateLayout(bool moveUI, bool &itemRemoved)
 	}
 
 	if (moveUI) {
-		Invalidate(FALSE);
+		RedrawWindow();
 	}
 }
 
 void CWindowSelectorDlg::OnTimer(UINT_PTR nIDEvent)
 {
+	if (!m_bActived) {
+		m_bActived = true;
+		BringWndToTop(m_hWnd);
+		SetActiveWindow();
+	}
+
 	if (g_bIsRunAsTool && !IsCallerAlive()) {
 		TerminateProcess(GetCurrentProcess(), SELECTOR_EXIT_CODE_CANCEL);
 	}
@@ -467,7 +507,7 @@ void CWindowSelectorDlg::OnLButtonDown(UINT nFlags, CPoint point)
 			}
 		}
 
-		Invalidate(FALSE);
+		RedrawWindow();
 	}
 
 	CDialogEx::OnLButtonDown(nFlags, point);
@@ -488,4 +528,14 @@ void CWindowSelectorDlg::OnLButtonDblClk(UINT nFlags, CPoint point)
 	}
 
 	CDialogEx::OnLButtonDblClk(nFlags, point);
+}
+
+void CWindowSelectorDlg::OnActivateApp(BOOL bActive, DWORD dwThreadID)
+{
+	CDialogEx::OnActivateApp(bActive, dwThreadID);
+
+	// TODO: 在此处添加消息处理程序代码
+	if (!bActive && g_bIsRunAsTool) {
+		TerminateProcess(GetCurrentProcess(), SELECTOR_EXIT_CODE_CANCEL);
+	}
 }

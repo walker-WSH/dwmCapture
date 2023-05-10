@@ -7,6 +7,7 @@
 #include "window-selector.h"
 #include "window-selector-dlg.h"
 #include "HandleWrapper.h"
+#include <assert.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -20,6 +21,10 @@ END_MESSAGE_MAP()
 
 bool g_bIsRunAsTool = false;
 std::string g_strGUID = "";
+
+HANDLE m_hMapHandle = 0;
+void *m_pMapViewOfFile = nullptr;
+WindowSelectorIPC *m_pMapInfo = nullptr;
 
 bool IsCallerAlive()
 {
@@ -36,9 +41,6 @@ bool IsCallerAlive()
 	return true;
 }
 
-HANDLE m_hMapHandle = 0;
-void *m_pMapViewOfFile = nullptr;
-WindowSelectorIPC *m_pMapInfo = nullptr;
 bool InitMap()
 {
 	SIZE_T size = ALIGN(sizeof(WindowSelectorIPC), 64);
@@ -61,8 +63,17 @@ bool InitMap()
 	return true;
 }
 
+LONG WINAPI ExceptionFilter(struct _EXCEPTION_POINTERS *pExceptionPointers)
+{
+	assert(false && "crashed");
+	TerminateProcess(GetCurrentProcess(), SELECTOR_EXIT_CODE_ERROR);
+	return EXCEPTION_EXECUTE_HANDLER;
+}
+
 void InitParams()
 {
+	SetUnhandledExceptionFilter(ExceptionFilter);
+
 	int argc = 0;
 	LPWSTR *argv = CommandLineToArgvW(GetCommandLineW(), &argc);
 	if (!argv) {
