@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="common">
+      <UniqueIdentifier>{cc42efef-94f6-4925-b787-b5affd9cd4cf}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="window-selector.h">
@@ -36,6 +39,18 @@
     <ClInclude Include="targetver.h">
       <Filter>资源文件</Filter>
     </ClInclude>
+    <ClInclude Include="..\common\StringConvert.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\window-selector-IPC.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\FileHelper.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\HandleWrapper.h">
+      <Filter>common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="window-selector.cpp">
@@ -46,6 +61,15 @@
     </ClCompile>
     <ClCompile Include="pch.cpp">
       <Filter>资源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\StringConvert.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\FileHelper.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\HandleWrapper.cpp">
+      <Filter>common</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -29,8 +29,11 @@
     <ClInclude Include="..\common\HandleWrapper.h">
       <Filter>common</Filter>
     </ClInclude>
-    <ClInclude Include="..\common\window-selector-IPC.hpp">
+    <ClInclude Include="..\common\StringConvert.h">
       <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\window-selector-IPC.hpp">
+      <Filter>lib</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -47,6 +50,9 @@
       <Filter>common</Filter>
     </ClCompile>
     <ClCompile Include="..\common\HandleWrapper.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\StringConvert.cpp">
       <Filter>common</Filter>
     </ClCompile>
   </ItemGroup>

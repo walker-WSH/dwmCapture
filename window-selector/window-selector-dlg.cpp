@@ -126,6 +126,7 @@ BOOL CWindowSelectorDlg::OnInitDialog()
 		},
 		0, 0, WINEVENT_OUTOFCONTEXT);
 
+	SetTimer(TIMER_EVENT, 20, 0);
 	return TRUE;
 }
 
@@ -256,7 +257,6 @@ void CWindowSelectorDlg::refreshWindows()
 	if (!m_vecWindows.empty())
 		initLayout();
 
-	SetTimer(TIMER_EVENT, 20, 0);
 	Invalidate(FALSE);
 }
 
@@ -434,6 +434,10 @@ void CWindowSelectorDlg::updateLayout(bool moveUI, bool &itemRemoved)
 
 void CWindowSelectorDlg::OnTimer(UINT_PTR nIDEvent)
 {
+	if (g_bIsRunAsTool && !IsCallerAlive()) {
+		TerminateProcess(GetCurrentProcess(), SELECTOR_EXIT_CODE_CANCEL);
+	}
+
 	if (nIDEvent == TIMER_EVENT) {
 		bool itemRemoved;
 		updateLayout(false, itemRemoved);
@@ -473,7 +477,12 @@ void CWindowSelectorDlg::OnLButtonDblClk(UINT nFlags, CPoint point)
 {
 	for (auto &item : m_vecWindows) {
 		if (item->selected && IsWindow(item->hWnd)) {
-			::MessageBoxW(0, item->title.c_str(), 0, 0);
+			if (g_bIsRunAsTool) {
+				m_pMapInfo->outputWnd = (DWORD64)item->hWnd;
+				TerminateProcess(GetCurrentProcess(), SELECTOR_EXIT_CODE_OK);
+			} else {
+				::MessageBoxW(0, item->title.c_str(), 0, 0);
+			}
 			break;
 		}
 	}

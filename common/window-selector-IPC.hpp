@@ -12,6 +12,7 @@ static const auto SELECTOR_INFO_MAP = "selector_info";
 
 static const auto SELECTOR_EXIT_CODE_OK = 0;
 static const auto SELECTOR_EXIT_CODE_CANCEL = 1;
+static const auto SELECTOR_EXIT_CODE_ERROR = 2;
 
 struct WindowSelectorIPC {
 	POINT centerPos;

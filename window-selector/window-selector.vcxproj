@@ -191,7 +191,11 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\common\FileHelper.h" />
+    <ClInclude Include="..\common\HandleWrapper.h" />
+    <ClInclude Include="..\common\StringConvert.h" />
     <ClInclude Include="..\common\tool.hpp" />
+    <ClInclude Include="..\common\window-selector-IPC.hpp" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Resource.h" />
@@ -200,6 +204,9 @@
     <ClInclude Include="window-selector.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\common\FileHelper.cpp" />
+    <ClCompile Include="..\common\HandleWrapper.cpp" />
+    <ClCompile Include="..\common\StringConvert.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

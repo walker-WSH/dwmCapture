@@ -157,6 +157,7 @@
   <ItemGroup>
     <ClInclude Include="..\common\FileHelper.h" />
     <ClInclude Include="..\common\HandleWrapper.h" />
+    <ClInclude Include="..\common\StringConvert.h" />
     <ClInclude Include="..\common\window-selector-IPC.hpp" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="lib-window-selector.h" />
@@ -165,6 +166,7 @@
   <ItemGroup>
     <ClCompile Include="..\common\FileHelper.cpp" />
     <ClCompile Include="..\common\HandleWrapper.cpp" />
+    <ClCompile Include="..\common\StringConvert.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="lib-window-selector.cpp" />
     <ClCompile Include="pch.cpp">

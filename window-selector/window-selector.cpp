@@ -6,6 +6,7 @@
 #include "framework.h"
 #include "window-selector.h"
 #include "window-selector-dlg.h"
+#include "HandleWrapper.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -17,7 +18,87 @@ BEGIN_MESSAGE_MAP(CwindowselectorApp, CWinApp)
 ON_COMMAND(ID_HELP, &CWinApp::OnHelp)
 END_MESSAGE_MAP()
 
-// CwindowselectorApp 构造
+bool g_bIsRunAsTool = false;
+std::string g_strGUID = "";
+
+bool IsCallerAlive()
+{
+	if (!g_bIsRunAsTool)
+		return true;
+
+	std::string name = g_strGUID + std::string(SELECTOR_ALIVE_EVENT);
+
+	HANDLE hdl = CHandleWrapper::GetAlreadyEvent(name.c_str());
+	if (!CHandleWrapper::IsHandleValid(hdl))
+		return false;
+
+	CHandleWrapper::CloseHandleEx(hdl);
+	return true;
+}
+
+HANDLE m_hMapHandle = 0;
+void *m_pMapViewOfFile = nullptr;
+WindowSelectorIPC *m_pMapInfo = nullptr;
+bool InitMap()
+{
+	SIZE_T size = ALIGN(sizeof(WindowSelectorIPC), 64);
+	std::string name = g_strGUID + std::string(SELECTOR_INFO_MAP);
+
+	bool bNewCreate = false;
+	m_hMapHandle = CHandleWrapper::GetMap(name.c_str(), (unsigned)size, &bNewCreate);
+	if (!CHandleWrapper::IsHandleValid(m_hMapHandle) || bNewCreate) {
+		assert(false);
+		return false;
+	}
+
+	m_pMapViewOfFile = MapViewOfFile(m_hMapHandle, FILE_MAP_ALL_ACCESS, 0, 0, size);
+	if (!m_pMapViewOfFile) {
+		assert(false);
+		return false;
+	}
+
+	m_pMapInfo = (WindowSelectorIPC *)m_pMapViewOfFile;
+	return true;
+}
+
+void InitParams()
+{
+	int argc = 0;
+	LPWSTR *argv = CommandLineToArgvW(GetCommandLineW(), &argc);
+	if (!argv) {
+		assert(false);
+		TerminateProcess(GetCurrentProcess(), SELECTOR_EXIT_CODE_ERROR);
+		return;
+	}
+
+	std::shared_ptr<LPWSTR> freeArg(argv, [](LPWSTR *ptr) { LocalFree(ptr); });
+
+	if (argc != 3) {
+		return;
+	}
+
+	g_bIsRunAsTool = true;
+
+	std::string cmd = str::w2u(argv[1]);
+	if (cmd != SELECTOR_TOOL_CMD) {
+		assert(false);
+		TerminateProcess(GetCurrentProcess(), SELECTOR_EXIT_CODE_ERROR);
+		return;
+	}
+
+	g_strGUID = str::w2u(argv[2]);
+
+	if (!IsCallerAlive()) {
+		TerminateProcess(GetCurrentProcess(), SELECTOR_EXIT_CODE_CANCEL);
+		return;
+	}
+
+	if (!InitMap()) {
+		assert(false);
+		TerminateProcess(GetCurrentProcess(), SELECTOR_EXIT_CODE_ERROR);
+		return;
+	}
+}
 
 CwindowselectorApp::CwindowselectorApp()
 {
@@ -65,6 +146,8 @@ BOOL CwindowselectorApp::InitInstance()
 	// TODO: 应适当修改该字符串，
 	// 例如修改为公司或组织名
 	SetRegistryKey(_T("应用程序向导生成的本地应用程序"));
+
+	InitParams();
 
 	CWindowSelectorDlg dlg;
 	m_pMainWnd = &dlg;
