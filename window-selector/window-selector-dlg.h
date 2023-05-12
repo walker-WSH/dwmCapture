@@ -28,7 +28,7 @@ struct WindowItemInfo {
 	HTHUMBNAIL hDwmReg = nullptr;
 	HICON hIcon = nullptr;
 	CStatic *pStaticIcon = nullptr;
-	CStatic *pStaticLabel = nullptr;
+	CButton *pStaticLabel = nullptr;
 
 	WindowItemInfo(HWND wnd, const std::wstring &text, const std::wstring &exe);
 	virtual ~WindowItemInfo();
@@ -75,4 +75,5 @@ public:
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
 	afx_msg void OnActivateApp(BOOL bActive, DWORD dwThreadID);
+	virtual BOOL PreTranslateMessage(MSG *pMsg);
 };

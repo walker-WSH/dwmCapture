@@ -13,6 +13,7 @@
 
 CWindowSelectorDlg *g_pMainDlg = nullptr;
 CFont g_textFont;
+CToolTipCtrl m_tooltip;
 
 WindowItemInfo::WindowItemInfo(HWND wnd, const std::wstring &text, const std::wstring &path)
 	: hWnd(wnd), title(text)
@@ -24,11 +25,11 @@ WindowItemInfo::WindowItemInfo(HWND wnd, const std::wstring &text, const std::ws
 	hDwmReg = RegisterThumbWindow(wnd, g_pMainDlg->GetSafeHwnd());
 
 	//------------------------------------------------------------------------------------
-	pStaticLabel = new CStatic();
-	pStaticLabel->Create(text.c_str(),
-			     WS_CHILD | WS_VISIBLE | SS_LEFT | SS_CENTERIMAGE | SS_ELLIPSISMASK,
-			     drawRegion, g_pMainDlg);
+	pStaticLabel = new CButton();
+	pStaticLabel->Create(text.c_str(), WS_CHILD | WS_VISIBLE | BS_LEFT | BS_VCENTER, drawRegion,
+			     g_pMainDlg, 99999);
 	pStaticLabel->SetFont(&g_textFont, true);
+	m_tooltip.AddTool(pStaticLabel, text.c_str());
 
 	//------------------------------------------------------------------------------------
 	pStaticIcon = new CStatic();
@@ -104,6 +105,9 @@ BOOL CWindowSelectorDlg::OnInitDialog()
 	SetWindowText(L"Window Selector");
 	ModifyStyleEx(WS_EX_APPWINDOW, WS_EX_TOOLWINDOW);
 	ModifyStyle(0, WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
+
+	m_tooltip.Create(this, TTS_ALWAYSTIP | WS_POPUP);
+	m_tooltip.EnableToolTips(TRUE);
 
 	if (m_pMapInfo) {
 		if (m_pMapInfo->resolution.cx > 0 && m_pMapInfo->resolution.cy) {
@@ -211,7 +215,7 @@ void CWindowSelectorDlg::OnPaint()
 	CRect rect;
 	GetClientRect(&rect);
 
-	CBrush clrBrush(0xFFFFFF);
+	CBrush clrBrush(0xf0f0f0);
 	dc.FillRect(&rect, &clrBrush);
 
 	for (auto &item : m_vecWindows) {
@@ -538,4 +542,10 @@ void CWindowSelectorDlg::OnActivateApp(BOOL bActive, DWORD dwThreadID)
 	if (!bActive && g_bIsRunAsTool) {
 		TerminateProcess(GetCurrentProcess(), SELECTOR_EXIT_CODE_CANCEL);
 	}
+}
+
+BOOL CWindowSelectorDlg::PreTranslateMessage(MSG *pMsg)
+{
+	m_tooltip.RelayEvent(pMsg);
+	return CDialogEx::PreTranslateMessage(pMsg);
 }
